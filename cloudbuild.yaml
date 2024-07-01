@@ -4,5 +4,5 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/scdney-2024/workshop:alpha']
 options:
-  machineType: 'N1_HIGHCPU_16'
+  machineType: 'n2-standard-8'
 timeout: 9600s

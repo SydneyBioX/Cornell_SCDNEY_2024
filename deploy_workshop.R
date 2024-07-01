@@ -1,34 +1,35 @@
 
 
 
-Sys.setenv(GCE_AUTH_FILE = '/Users/yue/Downloads/semiotic-vial-255604-401233702f0c.json')
+Sys.setenv(GCE_AUTH_FILE = 'C:/Users/xifu0689/OneDrive - The University of Sydney (Staff)/Conferences/ISMB_2024/Workshop/scdney-2024-c8c3291c1d7b.json')
 library(googleComputeEngineR)
 
 
-gce_global_project("semiotic-vial-255604")
+gce_global_project("scdney-2024")
 gce_global_zone("us-central1-a")
 
 ## see gce_list_machinetype() for options of predefined_type
-(tag = "gcr.io/semiotic-vial-255604/diseaseprediction:alpha")
+(tag = "gcr.io/scdney-2024/workshop:alpha")
 
 
 
 vm1 <- gce_vm(template = "rstudio",
-              name = "diseaseprediction",
+              name = "workshop",
               disk_size_gb = 500,
-              predefined_type = "n2-standard-32",
+              predefined_type = "n2-standard-8",
               dynamic_image = tag,
               user = "rstudio",
               password = "test")
 
 # gce_global_zone("us-west2-a")
-vm2 <- gce_vm(template = "rstudio",
-             name = "diseaseprediction2",
-             disk_size_gb = 500,
-             predefined_type = "n2-standard-32",
-             dynamic_image = tag,
-             user = "rstudio",
-             password = "test")
+
+# vm2 <- gce_vm(template = "rstudio",
+#              name = "workshop2",
+#              disk_size_gb = 500,
+#              predefined_type = "n2-standard-1",
+#              dynamic_image = tag,
+#              user = "rstudio",
+#              password = "test")
 
 # 32 CPU	256GB RAM
 # system(paste0("cp -r /home/gittmp/* ", getwd()))
