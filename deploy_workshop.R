@@ -16,17 +16,27 @@ gce_global_zone("us-central1-a")
 vm1 <- gce_vm(template = "rstudio",
               name = "workshop",
               disk_size_gb = 500,
-              predefined_type = "n2-standard-8",
+              predefined_type = "n2-standard-32",
               dynamic_image = tag,
               user = "rstudio",
               password = "test")
+
+vm2 <- gce_vm(template = "rstudio",
+              name = "workshop2",
+              disk_size_gb = 500,
+              predefined_type = "n2-standard-32",
+              dynamic_image = tag,
+              user = "rstudio",
+              password = "test")
+
+
 
 # gce_global_zone("us-west2-a")
 
 # vm2 <- gce_vm(template = "rstudio",
 #              name = "workshop2",
 #              disk_size_gb = 500,
-#              predefined_type = "n2-standard-1",
+#              predefined_type = "n2-standard-32",
 #              dynamic_image = tag,
 #              user = "rstudio",
 #              password = "test")
