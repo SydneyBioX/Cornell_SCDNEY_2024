@@ -1,7 +1,7 @@
 
 
 
-Sys.setenv(GCE_AUTH_FILE = 'C:/Users/xifu0689/OneDrive - The University of Sydney (Staff)/Conferences/ISMB_2024/Workshop/scdney-2024-c8c3291c1d7b.json')
+Sys.setenv(GCE_AUTH_FILE = 'C:/Users/xifu0689/OneDrive - The University of Sydney (Staff)/Conferences/ISMB_Cornell_Glasgow_2024/Workshop/scdney-2024-c8c3291c1d7b.json')
 library(googleComputeEngineR)
 
 
@@ -14,12 +14,16 @@ gce_global_zone("us-central1-a")
 
 
 vm1 <- gce_vm(template = "rstudio",
-              name = "workshop",
+              name = "workshop1",
               disk_size_gb = 500,
               predefined_type = "n2-standard-32",
               dynamic_image = tag,
               user = "rstudio",
               password = "test")
+
+
+gce_global_zone("asia-southeast1-a")
+
 
 vm2 <- gce_vm(template = "rstudio",
               name = "workshop2",
