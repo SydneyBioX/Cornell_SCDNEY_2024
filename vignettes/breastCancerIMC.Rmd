@@ -37,7 +37,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE,  message=FALSE, warning= FALSE)
 
 library(SingleCellExperiment)
-load("./data/breastCancer.RData")
+load("../data/breastCancer.RData")
 data_sce = IMC
 ```
 
@@ -317,7 +317,6 @@ a <- plotUMAP(data_sce, colour_by = "description")
 b <- plotUMAP(data_sce, colour_by = "metabricId")
 
 ggarrange(plotlist = list(a,b))
-
 ```
 
 Visualise selected patient:   
@@ -339,12 +338,12 @@ a <- ggplot(metadata, aes(x =UMAP1 , y = UMAP2 , colour = selected_patient  )) +
  
 # For the selected patient MB-0628, denote it as "selected patient" 
 # and all other individuals as "other individuals"
-metadata$selected_patient <- ifelse( metadata$metabricId == "MB-0628", "seleted patient" , "other individuals")
+metadata$selected_patient <- ifelse(metadata$metabricId == "MB-0628", "seleted patient" , "other individuals")
         
 # Generate a UMAP plot and store it in R object `b`   
 b <- ggplot(metadata, aes(x =UMAP1 , y = UMAP2 , colour = selected_patient  )) + geom_scattermore(pointsize = 0.5)  + scale_colour_manual(values = c("grey" , "red"))
  
-ggarrange(plotlist = list(a,b ))
+ggarrange(plotlist = list(a,b))
  
 ```
 
@@ -367,21 +366,20 @@ The advantage with spatial omics is that we can examine the organisation of the 
 - permute the spatial coordinate.           
 to give a sense of what is random ordering.       
  
-We select a particular patient "MB-0263" and visualise its spatial pattern using ggplot.  
+We select a particular patient "MB-0002" and visualise its spatial pattern using ggplot.  
 
 ```{r fig.height=4, fig.width=6, eval=params$evalc}
 
 # obtaining the meta data for this patient 
-one_sample <- data_sce[, data_sce$metabricId  == "MB-0263"]
-one_sample  <- colData(one_sample)
-one_sample <- data.frame(one_sample)
+one_sample <- data_sce[, data_sce$metabricId  == "MB-0002"]
+one_sample  <- data.frame(colData(one_sample))
  
-a <- ggplot(one_sample, aes(x = Location_Center_X, y = Location_Center_Y, colour = description)) + 
+ggplot(one_sample, aes(x = Location_Center_X, y = Location_Center_Y, colour = description)) + 
   geom_point(alpha=0.7) + 
   scale_colour_tableau() + 
   ggtitle("Original slide")
 
-a
+
 ```
 
 ## Cellular neighbourhoods {.tabset}
@@ -400,7 +398,7 @@ BPPARAM <- MulticoreParam(16)
 
 # Cluster cells into spatial regions with similar composition.
 data_sce  <- lisaClust(
-  data_sce ,
+  data_sce,
   k = 5,
   Rs = c(20, 50, 100),
   sigma = 50,
@@ -449,13 +447,11 @@ We have written a small function `draw_region_clustering_result` to visualise th
 draw_region_clustering_result(data_sce , 
                               sample = "metabricId" , 
                               selected_sample =  "MB-0002" )
-
 ```
 
 ###  Across individuals 
 
-We can better interpret the region output by summarising the proportion of each cell type in a region across the individuals. We look at the composition of cell types in each region, and compare between prognostic outcomes.  
-
+We can better interpret the region output by summarising the proportion of each cell type in a region across the individuals. We look at the composition of cell-types in each region and compare between prognostic outcomes.  
 
 ```{r  fig.height=4, fig.width=10, eval=params$evalc}
 draw_dotplot(data_sce,  
@@ -492,16 +488,16 @@ draw_selected_region_boxplot(data_sce,
 ```
 
 #  Part 3: Feature engineering with scFeatures
-In this workshop, we use the scFeatures package to generate a molecular representation for each individuals from the matrix of `features x cells`. The molecular representation is interpretable and hence facilitates downstream analysis of the individual. In general, `scFeatures` generates features across six categories representing different molecular views of cellular characteristics. These include:
+Here, we use scFeatures to generate molecular features for each individual using the  `features x cells` matrices. These feature are interpretable and can be used for downstream analyses. In general, `scFeatures` generates features across six categories:
 
-i) cell type proportions
-ii) cell type specific gene expressions
-iii) cell type specific pathway expressions
-iv) cell type specific cell-cell interaction (CCI) scores
-v) overall aggregated gene expressions
-vi) spatial metrics: Nearest neighbour's correlation, L statistics, Moran's I, cell-cell communication
+i) Cell-type proportions
+ii) Cell-type specific gene expressions
+iii) Cell-type specific pathway expressions
+iv) Cell-type interaction scores
+v) Aggregated gene expressions
+vi) Spatial metrics: Nearest neighbour's correlation, L statistics, and Moran's I
 
-The different types of features constructed enable a more comprehensive multi-view understanding of each individual from a matrix of `spot x cells`. By default, the function will generate a total of 13 different types of features (feature_types) shown below and store them in a list. All generated feature types are stored in a matrix of `samples x features`. 
+The different types of features constructed enable a more comprehensive multi-view understanding of each individual. By default, the function will generate a total of 13 different types of features and are stored as 13 `samples x features` matrices, one for each feature. 
 
 In additional to the spatial metrics, we can also consider region information as an additional layer of information. Thus, the following code aims to create cell-type specific features for each region. We use the function "paste0" to construct **region-specific sub-cell types** and name it as `celltype` in the R object `data_sce`. For simplicity, in this workshop, the variable `celltype` in the R object `data_sce` refers to region-specific sub-cell types.
 
@@ -520,7 +516,6 @@ colnames(df) <- c("Sample", "Frequency")
 df <- df[order(df$Frequency, decreasing = TRUE),]
 df$Sample <- factor(df$Sample, levels = unique(df$Sample))
 ggplot(df, aes(x = Sample, y = Frequency)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) + labs(title = "Number of cells in samples", x = "\nSample", y = "Frequency\n") 
-
 #print("Number of cells in each region-specific sub-cell type")
 # DT::datatable( data.frame(table(data_sce$celltype)) , options = list(scrollX = TRUE))
 # hist(data_sce$celltype)
@@ -529,7 +524,7 @@ df <- as.data.frame(table(data_sce$celltype))
 colnames(df) <- c("Sample", "Frequency")
 df <- df[order(df$Frequency, decreasing = TRUE),]
 df$Sample <- factor(df$Sample, levels = unique(df$Sample))
-ggplot(df, aes(x = Sample, y = Frequency)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) + labs(title = "Number of cells in each region x sub-cell type", x = "\nSample", y = "Frequency\n") 
+ggplot(df, aes(x = Sample, y = Frequency)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) + labs(title = "Number of cells in each region x sub-cell type", x = "\nCell-types", y = "Frequency\n") 
 ```
 
 <div class="aimbox"> 
@@ -551,10 +546,10 @@ There are different ways you can use `scFeatures` to generate molecular represen
 - feature_types, and
 - type
 
-There are a total of 13 different types of features (feature_types) that you can choose to generate. The argument type refers the type of input data we have. This is either `scrna` (single-cell RNA-sequencing data), `spatial_p` (spatial proteomics data), or `spatial_t` (single cell spatial data). 
+There are a total of 13 different types of features (feature_types) that you can choose to generate. The argument type refers the type of input data we have. This is either `scrna` (single-cell RNA-sequencing data), `spatial_p` (spatial proteomics data), or `spatial_t` (single-cell spatial data). 
 
 ### Generate features
-Suppose that we are interested in determining the proportion of each cell type in each individual within each region. It is necessary to specify `type = spatial_p` to reflect that we have spatial proteomics data and `feature_types = proportion_raw` to indicate we intend to calculate cell type proportion for each of the region-specific sub-cell types.
+Suppose that we are interested in determining the proportion of cell-types within each region for each individual. It is necessary to specify `type = spatial_p` to reflect that we have spatial proteomics data and `feature_types = proportion_raw` to indicate we intend to calculate cell-type proportions for each of the region-specific cell-types.
 
 ```{r eval=params$evalc}
 ## [A] The next few lines extract specific information from data_sce as input to scFeatures. 
@@ -574,16 +569,15 @@ celltype <- data_sce$celltype
 spatialCoords <- list(colData(data_sce)$Location_Center_X, colData(data_sce)$Location_Center_Y)
 
 ### [B] Running scFeatures
-scfeatures_result <- scFeatures( IMCmatrix, 
-                                 sample = sample, 
-                                 celltype = celltype, 
-                                 spatialCoords = spatialCoords,
-                                 feature_types = "proportion_raw", 
-                                 type = "spatial_p" )
-
+scfeatures_result <- scFeatures(IMCmatrix, 
+                                sample = sample, 
+                                celltype = celltype, 
+                                spatialCoords = spatialCoords,
+                                feature_types = "proportion_raw", 
+                                type = "spatial_p" )
 ```
 
-The generated feature is a matrix of `samples x features`, the code below shows the first 5 features and the first 5 individuals for the region-specific sub-cell types.
+The generated feature is a `sample x feature` matrix, the code below shows the first 5 features and the first 5 individuals for the region-specific sub-cell types.
 
 ```{r eval=params$evalc, fig.height=6, fig.width=20}
 scfeatures_result$proportion_raw[1:5, 1:5]
@@ -613,7 +607,7 @@ scfeatures_result <- scFeatures( selected_data,
 feature <- scfeatures_result$proportion_raw
 feature <- feature[ grep("poor|good", rownames(feature)),  ]
 
-plot_barplot( feature ) + ggtitle("Proportion raw feature")
+plot_barplot(feature ) + ggtitle("Proportion raw feature") + labs(y = "proportion\n")
 
 ```
 
@@ -638,7 +632,7 @@ Assuming you have already generated a collection of molecular representation for
 
 ```{r eval=params$evalc}
 # Upload pre-generated RDS file
-scfeatures_result <- readRDS("./data/scfeatures_result.RDS")
+scfeatures_result <- readRDS("../data/scfeatures_result.RDS")
 
 # What are the features and the dimensions of features matrices that we have generated?
 lapply(scfeatures_result, dim)
@@ -686,7 +680,6 @@ ggplot( tT , aes(logFC,-log10(P.Value) , text = gene ) )+
       geom_point(aes(colour=-log10(P.Value)), alpha=1/3, size=1) +
       scale_colour_gradient(low="blue",high="red")+
       xlab("log2 fold change") + ylab("-log10 p-value")  
-
 # order the proteins by log fold change 
 tT <- tT[ order(tT$logFC, decreasing = T), ]
 tT <- tT[1:20, ]
@@ -694,7 +687,6 @@ ggplot( tT , aes( y = reorder(gene, logFC) , x = logFC  ) )+
       geom_point(aes(colour=-log10(P.Value)), alpha=1/3, size=4) +
       scale_colour_gradient(low="blue",high="red")+
       xlab("logFC") + ylab("region specific cell type specfic features" ) 
-
 ```
 
 <div class="aimbox"> 
@@ -793,7 +785,7 @@ classifyr_result <- crossValidate(clinicalAndOmics, c("timeRFS", "eventRFS"),
 
 
 ```{r eval=params$evalc}
-classifyr_result <- readRDS("./data/classifyr_result_IMC.rds")
+classifyr_result <- readRDS("../data/classifyr_result_IMC.rds")
 ```
 
 
@@ -807,7 +799,7 @@ survForestCV <- crossValidate(clinicalAndOmics, outcome, nFeatures = nFeatures,
 ```
 
 ```{r eval=params$evalc}
-survForestCV <- readRDS("./data/survForestCV.RDS")
+survForestCV <- readRDS("../data/survForestCV.RDS")
 ```
 
 
@@ -836,13 +828,6 @@ selectionPlot(multiresults,
                 characteristicsList = list(x = "Assay Name", row = "Classifier Name"),
                 orderingList = list("Assay Name" = ordering)) + tilt
 distribution(classifyr_result[[1]], plot = FALSE)
-```
-
-Using `samplesMetricMap` compare the per-sample C-index for Cox models for all kinds of metafeatures.
-
-```{r eval=params$evalc}
-library(grid)
-samplesMetricMap(classifyr_result)
 ```
 
 A few samples are predicted better by some metafeatures than others.
