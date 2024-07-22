@@ -759,7 +759,7 @@ run_association_study_report(scfeatures_result_new, output_folder )
 Recurrence risk estimation is a fundamental concern in medical research, particularly in the context of patient survival analysis. In this section, we will estimate recurrence risk using the molecular representation of individuals generated from `scFeatures` to build a survival model. We will use classifyR to build the survival model. The patient outcome is time-to-event, so, by default, ClassifyR will use Cox proportional hazards ranking to choose a set of features and also Cox proportional hazards to predict risk scores. We will also demonstrate other available models in `ClassifyR`. 
 
 
-## 4.1: Building a survival model 
+## Building a survival model 
 Recall in the previous section that we have stored the 13 matrices of different feature types in a list. Instead of manually retrieving each matrix from the list to build separate models, classifyR can directly take a list of matrices as an input and run a repeated cross-validation model on each matrix individually. Below, we run 5 repeats of 5-fold cross-validation.  A high score indicates prognosis of a worse outcome than a lower risk score.
 Although we have provided the code below, to save time, **just load the prepared RDS file `classifyr_result_IMC.rds`** and we will focus on the interpretation in this workshop. 
 
@@ -803,7 +803,7 @@ survForestCV <- readRDS("../data/survForestCV.RDS")
 ```
 
 
-## 4.2: Model performance
+## Model performance
 
 To examine the distribution of prognostic performance, use `performancePlot`. Currently, the only metric for time-to-event data is C-index and that will automatically be used because the predictive model type is tracked inside of the result objects. 
 
@@ -845,7 +845,7 @@ Q7: Is the highest predictive performance the only way to choose the best model 
 
 
 
-## 4.3: Cohort heterogeneity
+## Cohort heterogeneity
 Does each individual require a different collection of features?
 Using `samplesMetricMap` compare the per-sample C-index for Cox models for all kinds of metafeatures.
 
