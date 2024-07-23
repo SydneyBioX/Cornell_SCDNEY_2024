@@ -19,7 +19,7 @@ vm1 <- gce_vm(template = "rstudio",
               predefined_type = "n2-standard-32",
               dynamic_image = tag,
               user = "rstudio",
-              password = "test")
+              password = "2024")
 
 
 gce_global_zone("asia-southeast1-a")
@@ -31,7 +31,7 @@ vm2 <- gce_vm(template = "rstudio",
               predefined_type = "n2-standard-32",
               dynamic_image = tag,
               user = "rstudio",
-              password = "test")
+              password = "2024")
 
 
 
