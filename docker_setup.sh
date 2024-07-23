@@ -31,6 +31,6 @@ for((userIndex = 1; userIndex <= 75; userIndex++))
   userID=user${userIndex}
   sudo useradd -g trainees -d /home/$userID -m -s /bin/bash $userID
   # sudo cp -r /home/gittmp/* /home/$userID/
-  echo $userID:2023 | sudo chpasswd
+  echo $userID:2024 | sudo chpasswd
 }
 done
