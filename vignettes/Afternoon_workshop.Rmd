@@ -1,0 +1,34 @@
+---
+title: "Basics of RNA analysis in R"
+author: Daniel Kim
+affiliation:
+  - Sydney Precision Data Science Centre, University of Sydney, Australia;    
+  - Faculty of Medicine and Health, University of Sydney, Australia;     
+  - Charles Perkins Centre, University of Sydney, Australia;   
+date: 24 July, 2024
+
+output:
+  html_document:
+    code_folding: hide
+    fig_height: 12
+    fig_width: 12
+    toc: yes
+    number_sections: false
+    toc_depth: 3
+    toc_float: yes
+    self_contained: true
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries
+```{r, message = FALSE, warning = FALSE, error = FALSE}
+
+```
+
+

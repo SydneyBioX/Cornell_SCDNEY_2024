@@ -851,7 +851,9 @@ Using `samplesMetricMap` compare the per-sample C-index for Cox models for all k
 
 ```{r eval=params$evalc}
 library(grid)
-samplesMetricMap(classifyr_result)
+# Subset results for features of interest
+subset_results <- classifyr_result[names(classifyr_result) %in% c("clinical.CoxPH.CoxPH", "proportion_ratio.CoxPH.CoxPH", "gene_mean_celltype.CoxPH.CoxPH", "gene_mean_bulk.CoxPH.CoxPH", "L_stats.CoxPH.CoxPH")]
+samplesMetricMap(subset_results)
 ```
 
 <div class="aimbox"> 
