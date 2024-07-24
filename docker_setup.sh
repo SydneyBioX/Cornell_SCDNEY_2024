@@ -15,7 +15,7 @@ git clone https://github.com/SydneyBioX/Cornell_SCDNEY_2024 /home/gittmp/
 
 ## wget all data files from Google Cloud Storage into /home/CPC/
 cd /home/gittmp
-wget -O data.zip "https://www.dropbox.com/scl/fi/vh6zspd3xp9p7ih6rgnz8/data.zip?rlkey=5abvspvoeix1s00md69t2v53f&dl=0"
+wget -O data.zip "https://www.dropbox.com/scl/fi/6icd5vix870uoffv9p3zb/data.zip?rlkey=hu1tvpbdg0msykrud05hbclj6&st=2qbsk235&dl=0"
 unzip data.zip
 
 ls /home/

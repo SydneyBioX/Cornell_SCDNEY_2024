@@ -1,6 +1,6 @@
 # Unlocking single-cell and spatial analysis with scdney
 
 
-Data can be accessed from dropbox: https://www.dropbox.com/scl/fi/vh6zspd3xp9p7ih6rgnz8/data.zip?rlkey=5abvspvoeix1s00md69t2v53f&dl=0
+Data can be accessed from dropbox: https://www.dropbox.com/scl/fi/6icd5vix870uoffv9p3zb/data.zip?rlkey=hu1tvpbdg0msykrud05hbclj6&st=2qbsk235&dl=0
 
 Website at https://sydneybiox.github.io/BiocAsia2023/index.html  
