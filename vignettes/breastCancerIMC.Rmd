@@ -258,12 +258,12 @@ Structure of the 3-hour workshop:
 | Activity                                    | Time |
 |---------------------------------------------|------|
 | Part 1: Introduction                        | 20m  |
-| Part 2: Exploring spatial data              | 15m  |
-| Part 3: Feature engineering with scFeatures | 25m  |
-| Break                                       | 10m  |
-| Part 4: Survival analysis with ClassifyR    | 20m  |
+| Part 2: Exploring spatial data              | 20m  |
+| Part 3: Feature engineering with scFeatures | 30m  |
+| Break                                       | 15m  |
+| Part 4: Survival analysis with ClassifyR    | 15m  |
 | Part 5. Identify cohort heterogeneity       | 15m  |
-| Part 6: Cell segmentation with BIDCell      | 45m  |
+| Part 6: Cell segmentation with BIDCell      | 20m  |
 | Concluding remarks                          |      |
 
 # Part 2: Exploring spatial data {.tabset}
@@ -306,13 +306,13 @@ table(clinical$Grade)
 
 ## Visualise data 
 
-Typically in single-cell data analysis, we perform dimension reduction to project the high dimensional cell x gene matrix on to 2D space. This allows us to visualise various things of interest, such as distribution of cell types and disease outcomes. In this dataset, cells were classified into 22 cell types based on their markers.   
+Typically in single-cell data analysis, we perform dimension reduction to project the high dimensional cell x gene matrix on to 2D space. This allows us to visualise various things of interest, such as distribution of cell-types and disease outcomes. In this dataset, cells were classified into 22 cell-types based on their markers.   
 
 ```{r eval=params$evalc,fig.height=4, fig.width=12}
 data_sce <- runUMAP(data_sce, scale=TRUE)
 
 # With the UMAP function we can highlight by meta data of interest
-# Here we highlight the cell types and sample ID
+# Here we highlight the cell-types and sample ID
 a <- plotUMAP(data_sce, colour_by = "description")
 b <- plotUMAP(data_sce, colour_by = "metabricId")
 
@@ -355,14 +355,14 @@ ggarrange(plotlist = list(a,b))
 
 What can we learn from these illustrations? Is there anything interesting in the plot? Questions to consider include:
 
-- Q1: Does each cell type cluster together?
+- Q1: Does each cell-type cluster together?
 - Q2: When there is a large number of categories, are dimensionality reduction plots interpretable or misleading due to overplotting?
 
 </div>
 
 ## Spatial structure
-The advantage with spatial omics is that we can examine the organisation of the cell types as it occurs on the tissue slide. Here, we visualise one of the slides from a patient. As an optional exercise, you can: 
-- permute the cell type label.   
+The advantage with spatial omics is that we can examine the organisation of the cell-types as it occurs on the tissue slide. Here, we visualise one of the slides from a patient. As an optional exercise, you can: 
+- permute the cell-type label.   
 - permute the spatial coordinate.           
 to give a sense of what is random ordering.       
  
@@ -384,9 +384,9 @@ ggplot(one_sample, aes(x = Location_Center_X, y = Location_Center_Y, colour = de
 
 ## Cellular neighbourhoods {.tabset}
 
-Spatial data allow for the identification of a variety of characteristics including distinct cell types within an image, providing an overview of the tissue environment. This allows scientists to explore the cellular architecture and environment and its association with phenotype information (e.g meta-data). For our data story, we are interested in whether the individuals have a good or poor outcome. The outcome is often called a 'prognosis' and a good outcome is sometimes called 'favourable'. In this section, we examine graphically how cell-type co-localisation varies across spatial regions and how is such information associated with individual survival outcome. 
+Spatial data allow for the identification of a variety of characteristics including distinct cell-types within an image, providing an overview of the tissue environment. This allows scientists to explore the cellular architecture and environment and its association with phenotype information (e.g meta-data). For our data story, we are interested in whether the individuals have a good or poor outcome. The outcome is often called a 'prognosis' and a good outcome is sometimes called 'favourable'. In this section, we examine graphically how cell-type co-localisation varies across spatial regions and how is such information associated with individual survival outcome. 
 
-We begin by examining how can we identify and visualise regions of tissue where spatial associations between cell-types are similar. There are many packages that perform this task and here we use the [lisaClust function](https://www.bioconductor.org/packages/devel/bioc/html/lisaClust.html) that is based on "local L-function" to spatially cluster cells into different regions with similar cell type composition.
+We begin by examining how can we identify and visualise regions of tissue where spatial associations between cell-types are similar. There are many packages that perform this task and here we use the [lisaClust function](https://www.bioconductor.org/packages/devel/bioc/html/lisaClust.html) that is based on "local L-function" to spatially cluster cells into different regions with similar cell-type composition.
 
 <p style="color:blue">
 *This has already been pre-loaded for you. Please proceed to the next task.*
@@ -451,7 +451,7 @@ draw_region_clustering_result(data_sce ,
 
 ###  Across individuals 
 
-We can better interpret the region output by summarising the proportion of each cell type in a region across the individuals. We look at the composition of cell-types in each region and compare between prognostic outcomes.  
+We can better interpret the region output by summarising the proportion of each cell-type in a region across the individuals. We look at the composition of cell-types in each region and compare between prognostic outcomes.  
 
 ```{r  fig.height=4, fig.width=10, eval=params$evalc}
 draw_dotplot(data_sce,  
@@ -475,7 +475,7 @@ Q4: Which regions appear to be different between poor prognosis (short-term surv
 
 
 ### Further exploration by visualising selected regions 
-The number of sub-cell types increase considerably when we want to add spatial domain (region) information. To enhance clarity and facilitate understanding, it may be helpful to choose a predetermined region. The code generates a set of boxplots that enable the comparison of cell type proportions between individuals with good and poor prognosis in `region_5`.     
+The number of sub-cell types increase considerably when we want to add spatial domain (region) information. To enhance clarity and facilitate understanding, it may be helpful to choose a predetermined region. The code generates a set of boxplots that enable the comparison of cell-type proportions between individuals with good and poor prognosis in `region_5`.     
 
 ```{r fig.height=4, fig.width= 12 , eval=params$evalc}
 draw_selected_region_boxplot(data_sce, 
@@ -499,12 +499,12 @@ vi) Spatial metrics: Nearest neighbour's correlation, L statistics, and Moran's 
 
 The different types of features constructed enable a more comprehensive multi-view understanding of each individual. By default, the function will generate a total of 13 different types of features and are stored as 13 `samples x features` matrices, one for each feature. 
 
-In additional to the spatial metrics, we can also consider region information as an additional layer of information. Thus, the following code aims to create cell-type specific features for each region. We use the function "paste0" to construct **region-specific sub-cell types** and name it as `celltype` in the R object `data_sce`. For simplicity, in this workshop, the variable `celltype` in the R object `data_sce` refers to region-specific sub-cell types.
+In additional to the spatial metrics, we can also consider region information as an additional layer of information. Thus, the following code aims to create cell-type specific features for each region. We use the function "paste0" to construct **region-specific sub cell-types** and name it as `celltype` in the R object `data_sce`. For simplicity, in this workshop, the variable `celltype` in the R object `data_sce` refers to region-specific sub-cell-types.
 
 ```{r eval=FALSE}
 region <- data_sce$region
 
-# Define a series of sub-cell types that is regional specific
+# Define a series of sub-cell-types that is regional specific
 data_sce$celltype <- paste0( data_sce$description , "-" , region)
 ```
 
@@ -516,7 +516,7 @@ colnames(df) <- c("Sample", "Frequency")
 df <- df[order(df$Frequency, decreasing = TRUE),]
 df$Sample <- factor(df$Sample, levels = unique(df$Sample))
 ggplot(df, aes(x = Sample, y = Frequency)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) + labs(title = "Number of cells in samples", x = "\nSample", y = "Frequency\n") 
-#print("Number of cells in each region-specific sub-cell type")
+#print("Number of cells in each region-specific sub-cell-type")
 # DT::datatable( data.frame(table(data_sce$celltype)) , options = list(scrollX = TRUE))
 # hist(data_sce$celltype)
 
@@ -524,7 +524,7 @@ df <- as.data.frame(table(data_sce$celltype))
 colnames(df) <- c("Sample", "Frequency")
 df <- df[order(df$Frequency, decreasing = TRUE),]
 df$Sample <- factor(df$Sample, levels = unique(df$Sample))
-ggplot(df, aes(x = Sample, y = Frequency)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) + labs(title = "Number of cells in each region x sub-cell type", x = "\nCell-types", y = "Frequency\n") 
+ggplot(df, aes(x = Sample, y = Frequency)) + geom_bar(stat = "identity") + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 5)) + labs(title = "Number of cells in each region x sub-cell-type", x = "\nCell-types", y = "Frequency\n") 
 ```
 
 <div class="aimbox"> 
@@ -533,7 +533,7 @@ ggplot(df, aes(x = Sample, y = Frequency)) + geom_bar(stat = "identity") + theme
 <span class="far fa-comment fa-stack-1x fa-inverse"></span>
 </span> <strong> Discussion:</strong>
 
-Q6: Are there any samples or cell types you would like to remove from the data?
+Q6: Are there any samples or cell-types you would like to remove from the data?
 </div>
 
 ## 3.1 How to create molecular representations of individuals?  {.tabset}
@@ -562,7 +562,7 @@ sample <- data_sce$metabricId
 cond  <- clinical[match(sample, clinical$metabricId), ]$survivalgroup
 sample <- paste0(sample, "_cond_", cond ) 
 
-## Extract the region-specific sub-cell types
+## Extract the region-specific sub-cell-types
 celltype <- data_sce$celltype
 
 ## Extract the spatial coordinates
@@ -577,18 +577,18 @@ scfeatures_result <- scFeatures(IMCmatrix,
                                 type = "spatial_p" )
 ```
 
-The generated feature is a `sample x feature` matrix, the code below shows the first 5 features and the first 5 individuals for the region-specific sub-cell types.
+The generated feature is a `sample x feature` matrix, the code below shows the first 5 features and the first 5 individuals for the region-specific sub-cell-types.
 
 ```{r eval=params$evalc, fig.height=6, fig.width=20}
 scfeatures_result$proportion_raw[1:5, 1:5]
 ```
 
-### Sub cell-type 
-Suppose we are only interested in the molecular representation for individuals r `HR- CK7+` only  within region 5. 
+### Sub-cell-type 
+Suppose we are only interested in the molecular representation of `HR- CK7+` within individuals within region 5. 
 
 ```{r eval=params$evalc, fig.height=6, fig.width=20}
 ## [A] The next few lines extract specific information from data_sce as input to scFeatures. 
-## Select the HR- CK7+-region sub-cell type 
+## Select the HR- CK7+-region sub-cell-type 
 index <-   grep("HR- CK7+-region" , data_sce$celltype, fixed=TRUE)
 selected_data  <-  IMCmatrix[, index]
 selected_sample <-  sample[index]
@@ -612,7 +612,7 @@ plot_barplot(feature ) + ggtitle("Proportion raw feature") + labs(y = "proportio
 ```
 
 ### scFeatures code 
-The code below enable us to generate all feature types for all cell types in a line. Due to limitations with today's computational capacity, 
+The code below enable us to generate all feature types for all cell-types in a line. Due to limitations with today's computational capacity, 
 ** Please DO NOT run it in today's workshop, it will crash your system**. 
 
 ```
@@ -641,13 +641,13 @@ lapply(scfeatures_result, dim)
 
 ### Association study 
 Can we identify "differential expression" for a feature of interest?
-The R object `scfeatures_result` contains a variety of features. A important question focuses on the identification of features that reflect an association with the prognostic outcome, specifically distinguishing between good and poor outcomes.  The code provided below demonstrates the use of the `limma()` function to fit a linear model for the purpose of analysing gene_mean_celltype as an illustration feature.  The feature type known as `gene_mean_celltype` represents the mean protein expression for each sub-cell type specific to a spatial region. It is a matrix consisting of 77 individuals and 4180 features. It is important to acknowledge that within the context of our IMC data, the term "gene" is used to refer to "protein". 
+The R object `scfeatures_result` contains a variety of features. A important question focuses on the identification of features that reflect an association with the prognostic outcome, specifically distinguishing between good and poor outcomes.  The code provided below demonstrates the use of the `limma()` function to fit a linear model for the purpose of analysing gene_mean_celltype as an illustration feature.  The feature type known as `gene_mean_celltype` represents the mean protein expression for each sub-cell-type specific to a spatial region. It is a matrix consisting of 77 individuals and 4180 features. It is important to acknowledge that within the context of our IMC data, the term "gene" is used to refer to "protein". 
 
 ```{r eval=params$evalc, fig.height=5, fig.width=7}
-# Extract cell type specific gene expression for all regions. 
+# Extract cell-type specific gene expression for all regions. 
 gene_mean_celltype <- scfeatures_result$gene_mean_celltype
 
-# Extract HR+ CK7 cell type specific gene expression for Region5
+# Extract HR+ CK7 cell-type specific gene expression for Region5
 index <-  grep( "HR+ CK7--region5", colnames(gene_mean_celltype) , fixed= T)
 gene_mean_celltype <- gene_mean_celltype [, index] 
 
@@ -672,7 +672,7 @@ tT[1:6] <- signif(tT[1:6], digits=2)
 DT::datatable(tT)
 ```
 
-We visualise the comparison using a volcano plot and a dotplot for the cell type specific expression feature. This is a type of scatter-plot that is used to quickly identify changes in large datasets and represent the significance (y-axis) versus effect size or fold-change (x-axis). 
+We visualise the comparison using a volcano plot and a dotplot for the cell-type specific expression feature. This is a type of scatter-plot that is used to quickly identify changes in large datasets and represent the significance (y-axis) versus effect size or fold-change (x-axis). 
 
 ```{r eval=params$evalc, fig.height=5, fig.width=7}
 # The volcano plot - Significance vs Effect Size
@@ -711,9 +711,9 @@ feature <- feature[ grep("poor|good", rownames(feature )),  ]
 ```{r eval=params$evalc}
 feature <- scfeatures_result$gene_mean_celltype
 feature <- feature[ grep("poor|good", rownames(feature )),  ]
-# Select the features from HR+ CK7--cell type and in region 5
+# Select the features from HR+ CK7--cell-type and in region 5
 feature   <- feature[  , grep(  "HR+ CK7--region5" , colnames(feature) , fixed=T) ] 
-plot_boxplot(feature) + ggtitle("Protein mean sub-cell type feature")
+plot_boxplot(feature) + ggtitle("Protein mean sub-cell-type feature")
 ```
 
 #### Gene mean bulk 
@@ -851,9 +851,7 @@ Using `samplesMetricMap` compare the per-sample C-index for Cox models for all k
 
 ```{r eval=params$evalc}
 library(grid)
-# Subset results for features of interest
-subset_results <- classifyr_result[names(classifyr_result) %in% c("clinical.CoxPH.CoxPH", "proportion_ratio.CoxPH.CoxPH", "gene_mean_celltype.CoxPH.CoxPH", "gene_mean_bulk.CoxPH.CoxPH", "L_stats.CoxPH.CoxPH")]
-samplesMetricMap(subset_results)
+samplesMetricMap(classifyr_result)
 ```
 
 <div class="aimbox"> 
@@ -873,7 +871,7 @@ Q8: Are spatial features important for predicting recurrence? Does it hold for a
 
 - L function:
 
-The L function is a spatial statistic used to assess the spatial distribution of cell types. It assesses the significance of cell-cell interactions, by calculating the density of a cell type with other cell types within a certain radius. High values indicate spatial association (co-localisation), low values indicate spatial avoidance.
+The L function is a spatial statistic used to assess the spatial distribution of cell-types. It assesses the significance of cell-cell interactions, by calculating the density of a cell-type with other cell-types within a certain radius. High values indicate spatial association (co-localisation), low values indicate spatial avoidance.
 
 ```{r fig.height=4, fig.width=10, eval=params$evalc}
 tableau_palette <- scale_colour_tableau( palette = "Tableau 20")
@@ -902,7 +900,7 @@ ggarrange(plotlist = list(a,b))
 
 - Cell type interaction composition:
 
-We calculate the nearest neighbours of each cell and then calculate the pairs of cell types based on the nearest neighbour. This allows us to summarise it into a cell type interaction composition.
+We calculate the nearest neighbours of each cell and then calculate the pairs of cell-types based on the nearest neighbour. This allows us to summarise it into a cell-type interaction composition.
 
 
 ```{r fig.height=6, fig.width=10, eval=params$evalc}

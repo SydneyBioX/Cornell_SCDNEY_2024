@@ -1,0 +1,218 @@
+---
+title: "Bioinformatics basics"
+author: Daniel Kim
+affiliation:
+  - Sydney Precision Data Science Centre, University of Sydney, Australia;    
+  - Faculty of Medicine and Health, University of Sydney, Australia;     
+  - Charles Perkins Centre, University of Sydney, Australia;   
+date: 24 July, 2024
+
+output:
+  html_document:
+    code_folding: hide
+    fig_height: 12
+    fig_width: 12
+    toc: yes
+    number_sections: false
+    toc_depth: 3
+    toc_float: yes
+    self_contained: true
+    fig_caption: yes
+    theme: flatly
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Overview
+The goal of this workshop is to introduce you to some basic quality control and analysis of single-cell RNA-seq data. Importantly, this workshop does not go through clustering nor cell-type annotation as it is not exhaustive, but will hopefully help build foundational skills necessary for analysing transcriptomic data. Note: What you learn in this workshop is also applicable to bulk RNA data and proteomic data.
+
+### Time outline
+Structure of workshop:
+
+| Activity                                    
+|---------------------------------------------
+| Part 1: Introduction to R and RStudio       
+| Part 2: Quality control of scRNA data
+| Part 3: DE analysis
+| Part 4: Pathway analysis
+| Part 5: Cell segmentation with BIDCell
+
+# Quality Control {.tabset}
+## Load data & libraries
+This data is from a [study](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE158892) using high-throughput single-cell mRNA sequencing technique, (Chromium Single Cell Gene Expression Solution - 10x Genomics) of mouse L4 Dorsal Root Ganglia (DRG) in uninjured and injured conditions (Dorsal root crush).
+```{r, message = FALSE, warning = FALSE, error = FALSE}
+library(GEOquery)
+library(SingleCellExperiment)
+library(limma)
+library(Seurat)
+library(scater)
+library(clusterProfiler) 
+library(org.Mm.eg.db)
+library(enrichplot)
+library(GOSemSim)
+
+sce <- readRDS("../data/avraham_sce.rds")
+dim(sce)
+table(sce$condition)
+```
+
+## Mitochondrial genes
+There are many ways to assess and improve the quality of our data. We can check the proportion of mitochondrial gene expression, remove lowly expressed genes, and remove cells with low/high counts. Below are the mitochondrial genes of interest. High mitochondrial gene expression suggests dead cells or duplicates, so it is important to check this early on in the analysis workflow.
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+mt_genes <- grep("^mt", rownames(sce))
+
+# Print out mitochondrial genes
+print(rownames(sce)[mt_genes])
+
+# Calculate total counts for mitochondrial genes
+mt_counts <- colSums(counts(sce)[mt_genes,])
+# Calculate library size for each cell
+library_size <- colSums(counts(sce))
+# Divide mito counts by library size to get proportion
+prop_mt_genes <- mt_counts/library_size
+
+par(mfrow = c(1, 2))
+boxplot(prop_mt_genes, main = "Proportion of mito genes")
+hist(prop_mt_genes, main = " ")
+```
+
+## Low expressed genes
+Lowly expressed genes are often noisy with minimal biological signal and can affect statistical power as they have high variability with low counts. Here, we remove genes with less than a total of 5 counts.
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+gene_expression <- rowSums(counts(sce))
+summary(gene_expression)
+boxplot(gene_expression, main = "Gene counts")
+
+# Remove genes with zero expression
+idx <- which(gene_expression < 10)
+print(paste0("There are ", length(idx), " genes with less than a total of 5 counts"))
+sce <- sce[-idx,]
+```
+
+## Cell counts
+Here we check if there are any cells with a very low number of counts, Seurat suggests removing cells with less than a total of 200 counts but it's always good to have a look at the distribution. 
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+cell_counts <- colSums(counts(sce))
+summary(cell_counts)
+hist(cell_counts)
+```
+
+## Normalisation
+Once we are happy with our QC we can normalise the data. Here are two boxplots where the first contains raw counts from 20 random cells and the second boxplot show the normalised counts for those same cells. We will use the `scater` package to perform counts per million normalisation using the `logNormCounts` function. The raw counts are stored in the `counts()` slot while the CPM normalised data is stored in the `logcounts()` slot of the `SingleCellExperiment` object.
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+sce <- logNormCounts(sce)
+cells <- sample(colnames(sce), 20)
+par(mfrow = c(1,2))
+boxplot(counts(sce)[,cells], main = "Raw counts")
+boxplot(logcounts(sce)[,cells], main = "Normalised counts")
+```
+## PCA
+Next we perform dimension reduction, in this case PCA, to visualise our data. Instead of using base R plotting functions, we will use the `ggplot2` package which is more intuitive and commonly used for visualising data.
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+# Calculate PCs
+sce <- runPCA(sce)
+# Extract PXs
+pca <- reducedDim(sce, "PCA")
+pca <- as.data.frame(pca)
+pca$condition <- sce$condition
+
+ggplot(pca, aes(x = PC1, y = PC2, color = condition)) + geom_point()
+```
+
+
+# DE Analysis {.tabset}
+## Limma
+The goal of DE analyis is to identify genes that are differentially expressed between groups of interest: healthy vs diseased, young vs old, stages of parkinson's disease etc... The most commonly used package to do this is called `limma` which constucts linear models and performs a moderated t-test to identify DE genes between groups.
+
+We can see from the design matrix that the reference group (Intercept) is the uninjured group. When we construct the linear model using limma, we will be doing the following comparison: uninjured - injured. Thus, genes with positive logFC or test statistic will be more highly expressed in the uninjured group vs the injured. Genes with a negative logFC or test statistic will be more highly expressed in the injured group. 
+```{r fig.width = 8, fig.height = 4, message = FALSE, warning = FALSE, error = FALSE}
+# Create design matrix
+design_matrix <- model.matrix(~ as.factor(sce$condition))
+colnames(design_matrix)
+
+# You can also perform normalisation with voom and model the mean-variance trend
+#y <- voom(counts(sce), plot = TRUE
+
+# Fit linear model
+fit <- lmFit(logcounts(sce), design = design_matrix)
+fit <- eBayes(fit)
+tt <- topTable(fit, coef = 2, n = Inf, adjust.method = "BH", sort.by = "p")
+```
+
+## logFC density
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+plot(density(tt$logFC))
+```
+
+## MA plot
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+plot(tt$AveExpr, tt$logFC)
+```
+
+## Volcano plot
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+plot(tt$logFC, -log(tt$P.Value))
+```
+
+## DE statistics
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+tt <- signif(tt, digits = 3)
+DT::datatable(tt)
+```
+
+
+# Pathway analysis {.tabset}
+## GO over-representation analysis
+Here we select DE genes with an adjusted p-value < 0.05 and logFC > 0.5 and perform a GO over-representation analysis to identify any pathways that are significantly enriched with our genes of interest.
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+sig_genes <- rownames(tt[tt$adj.P.Val<0.05 & tt$logFC > 0.5,])
+ego <- enrichGO(gene = sig_genes,
+                keyType = "SYMBOL",
+                OrgDb = org.Mm.eg.db,
+                pvalueCutoff = 1,
+                ont = "BP",
+                pAdjustMethod = "BH",
+                readable = TRUE)
+
+tmp_ego <- ego[,c(1,2,3,5,6,7,8)]
+tmp_ego[,4:6] <- round(tmp_ego[,4:6], digits = 4)
+DT::datatable(tmp_ego)
+
+# Dotplot
+dotplot(ego)
+
+# Tree plot
+d <- godata(org.Mm.eg.db, ont = "BP")
+ego_tree <- pairwise_termsim(ego, method = "Wang", semData = d)
+
+suppressMessages(treeplot(ego_tree, offset = 30, font.size = 6, nCluster = 3, showCategory = 10))
+
+```
+
+## GSEA
+Unlike GO over-representation analysis, we do not subset our DE genes and instead use all genes output from limma including their -log10(p-values). Since GSEA is a rank based statistical test (Kolmogorov Smirnov test), the list of genes needs to be ordered from most significant to the least significant. Thus, we -log10 transform the adjusted p-values and pass these into the `gseGO` function.
+```{r fig.width = 12, fig.height = 6, message = FALSE, warning = FALSE, error = FALSE}
+sig_genes <- -log10(tt$adj.P.Val+1)
+names(sig_genes) <- rownames(tt)
+gse <- gseGO(geneList=sig_genes, 
+             ont ="BP", 
+             keyType = "SYMBOL", 
+             pvalueCutoff = 0.05, 
+             verbose = TRUE, 
+             OrgDb = org.Mm.eg.db, 
+             pAdjustMethod = "none",
+             scoreType = "pos",
+             nPermSimple = 10000)
+
+DT::datatable(gse@result)
+
+dotplot(gse)
+
+gse <- pairwise_termsim(gse)
+suppressMessages(treeplot(gse, showCategory = 20))
+```
